@@ -4,6 +4,7 @@ import android.annotation.TargetApi;
 import android.content.Context;
 import android.content.res.TypedArray;
 import android.graphics.Color;
+import android.graphics.drawable.ColorDrawable;
 import android.graphics.drawable.Drawable;
 import android.os.Build;
 import android.support.v7.widget.RecyclerView;
@@ -20,20 +21,30 @@ import android.widget.ImageView;
  */
 public class CollapsibleHeaderLayout extends FrameLayout {
 
+    public interface CollapseListener {
+        void onCollapsing(int currentHeight, float closingProgress);
+    }
+
     public static final int INITIAL_STATE_COLLAPSED = 0;
     public static final int INITIAL_STATE_EXPANDED = 1;
 
     private static final int CUSTOM_HEADER_VIEW_INITIAL_POSITION = 1;
 
+    private static final int SCRIM_STRATEGY_BEHIND = 0;
+    private static final int SCRIM_STRATEGY_IN_FRONT = 1;
+
     private float parallaxMultiplier = .5f;
+    private float customViewParallaxMultiplier = 0f;
     private int headerHeight = 0;
     private int minHeaderHeight = 0;
     private int initialState = INITIAL_STATE_EXPANDED;
     private int floatViewId = -1;
     private float floatViewScaleSpeed = 1f;
-    private int scrimColor = Color.TRANSPARENT;
+    private ColorDrawable scrimColor;
     private float scrimColorSpeed = 1f;
+    private int scrimStrategy = SCRIM_STRATEGY_BEHIND;
 
+    private CollapseListener collapseListener;
 
     private FrameLayout headerContainer;
     private Drawable headerDrawable;
@@ -67,13 +78,15 @@ public class CollapsibleHeaderLayout extends FrameLayout {
         TypedArray a = getContext().obtainStyledAttributes(attrs, R.styleable.CollapsibleHeaderLayout);
         headerDrawable = a.getDrawable(R.styleable.CollapsibleHeaderLayout_headerImage);
         parallaxMultiplier = a.getFloat(R.styleable.CollapsibleHeaderLayout_parallaxMultiplier, parallaxMultiplier);
+        customViewParallaxMultiplier = a.getFloat(R.styleable.CollapsibleHeaderLayout_customViewParallaxMultiplier, customViewParallaxMultiplier);
         headerHeight = a.getDimensionPixelSize(R.styleable.CollapsibleHeaderLayout_headerHeight, headerHeight);
         minHeaderHeight = a.getDimensionPixelSize(R.styleable.CollapsibleHeaderLayout_headerMinHeight, minHeaderHeight);
         initialState = a.getInt(R.styleable.CollapsibleHeaderLayout_headerInitialState, initialState);
         floatViewId = a.getResourceId(R.styleable.CollapsibleHeaderLayout_floatingViewId, floatViewId);
         floatViewScaleSpeed = a.getFloat(R.styleable.CollapsibleHeaderLayout_floatingViewScaleSpeed, floatViewScaleSpeed);
-        scrimColor = a.getColor(R.styleable.CollapsibleHeaderLayout_scrimColor, scrimColor);
+        scrimColor = new ColorDrawable(a.getColor(R.styleable.CollapsibleHeaderLayout_scrimColor, Color.TRANSPARENT));
         scrimColorSpeed = a.getFloat(R.styleable.CollapsibleHeaderLayout_scrimColorSpeed, scrimColorSpeed);
+        scrimStrategy = a.getInt(R.styleable.CollapsibleHeaderLayout_scrimStrategy, scrimStrategy);
         a.recycle();
     }
 
@@ -93,6 +106,7 @@ public class CollapsibleHeaderLayout extends FrameLayout {
             lp.height = LayoutParams.WRAP_CONTENT;
         }
         addView(headerContainer, lp);
+        setOverScrollMode(OVER_SCROLL_ALWAYS);
     }
 
 
@@ -220,6 +234,7 @@ public class CollapsibleHeaderLayout extends FrameLayout {
             actualTranslation = Math.min(maxTranslation, accumulatedTranslation);
 
             if (headerContainer.getTranslationY() + actualTranslation != 0) {
+                float progress = actualTranslation / (maxTranslation != 0 ? maxTranslation : 1);
                 if (floatView != null) {
                     float floatViewScale = 1f - actualTranslation * floatViewScaleSpeed / (maxTranslation != 0 ? maxTranslation : 1);
                     floatViewScale = Math.max(0, floatViewScale);
@@ -228,14 +243,30 @@ public class CollapsibleHeaderLayout extends FrameLayout {
                         child.setScaleY(floatViewScale);
                         child.setScaleX(floatViewScale);
                     }
+                    floatView.setTranslationY(-actualTranslation);
                 }
-                if (scrimColor != Color.TRANSPARENT) {
-                    float alpha = actualTranslation * scrimColorSpeed / (maxTranslation != 0 ? maxTranslation : 1);
-                    headerImageView.setColorFilter(adjustAlpha(scrimColor, alpha));
+                if (scrimColor.getColor() != Color.TRANSPARENT) {
+                    float alpha = progress * scrimColorSpeed;
+                    switch (scrimStrategy) {
+                        case SCRIM_STRATEGY_BEHIND:
+                            headerImageView.setColorFilter(adjustAlpha(scrimColor.getColor(), alpha));
+                            break;
+                        case SCRIM_STRATEGY_IN_FRONT:
+                            scrimColor.setAlpha((int) (255 * alpha));
+                            headerContainer.setForeground(scrimColor);
+                            break;
+                    }
                 }
-                floatView.setTranslationY(-actualTranslation);
+
+                if (customHeaderView != null) {
+                    customHeaderView.setTranslationY(actualTranslation * customViewParallaxMultiplier);
+                }
                 headerContainer.setTranslationY(-actualTranslation);
                 headerImageView.setTranslationY(actualTranslation * parallaxMultiplier);
+
+                if (collapseListener != null) {
+                    collapseListener.onCollapsing((int) (maxTranslation - actualTranslation), progress);
+                }
             }
         }
     }

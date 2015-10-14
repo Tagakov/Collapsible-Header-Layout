@@ -5,10 +5,15 @@
         <attr name="headerHeight" format="dimension" />
         <attr name="headerMinHeight" format="dimension"/>
         <attr name="parallaxMultiplier" format="float"/>
+        <attr name="customViewParallaxMultiplier" format="float"/>
         <attr name="floatingViewId" format="integer" />
         <attr name="floatingViewScaleSpeed" format="float" />
         <attr name="scrimColor" format="color|reference"/>
         <attr name="scrimColorSpeed" format="float" />
+        <attr name="scrimStrategy" format="enum" >
+            <enum name="behind" value="0"/>
+            <enum name="in_front" value="1"/>
+        </attr>
         <attr name="headerInitialState" format="enum" >
             <enum name="collapsed" value="0"/>
             <enum name="expanded" value="1"/>
