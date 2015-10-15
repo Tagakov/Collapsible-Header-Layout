@@ -158,6 +158,9 @@ public class CollapsibleHeaderLayout extends FrameLayout implements NestedScroll
         headerImageView.setImageDrawable(image);
     }
 
+    public void setCollapseListener(CollapseListener listener) {
+        this.collapseListener = listener;
+    }
 
     private void init() {
         headerImageView = new ImageView(getContext());
