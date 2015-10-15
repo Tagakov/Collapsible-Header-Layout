@@ -521,7 +521,7 @@ public class CollapsibleHeaderLayout extends FrameLayout implements NestedScroll
             stopOverDragReturning();
         }
 
-        if (!isEnabled() || returningToStart || canChildScrollUp()) {
+        if (!isEnabled() || returningToStart || canChildScrollUp() || overDragMultiplier == 0) {
             // Fail fast if we're not in a state where a swipe is possible
             return false;
         }
