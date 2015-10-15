@@ -375,6 +375,7 @@ public class CollapsibleHeaderLayout extends FrameLayout implements NestedScroll
         float visibleFraction = 1f - resultTranslation / minTranslation;
 
         onHeaderMoveUp(resultTranslation, visibleFraction);
+        alignFloatView();
 
         if (collapseListener != null) {
             collapseListener.onCollapse((int) (headerHeight + resultTranslation), visibleFraction);
@@ -401,9 +402,7 @@ public class CollapsibleHeaderLayout extends FrameLayout implements NestedScroll
 
             case OVERDRAG_STRATEGY_SCALE_OVER_BOUNDS:
                 overDragOverBounds(resultScale);
-                if (floatView != null) {
-                    moveFloatView(contentView.getTranslationY());
-                }
+                alignFloatView();
                 break;
         }
 
@@ -444,7 +443,6 @@ public class CollapsibleHeaderLayout extends FrameLayout implements NestedScroll
 
     private void onHeaderMoveUp(float translation, float headerVisibleFraction) {
         if (floatView != null) {
-            moveFloatView(translation);
             scaleFloatView(headerVisibleFraction * floatViewScaleSpeed);
         }
         scrimHeader(headerVisibleFraction);
@@ -482,8 +480,9 @@ public class CollapsibleHeaderLayout extends FrameLayout implements NestedScroll
         }
     }
 
-    private void moveFloatView(float translation) {
-        floatView.setTranslationY(translation);
+    private void alignFloatView() {
+        if (floatView == null) return;
+        floatView.setTranslationY(-headerHeight * (1f - headerContainer.getScaleY()) * (1f - overDragPivotY) + headerContainer.getTranslationY());
     }
 
     private void scaleFloatView(float scale) {
