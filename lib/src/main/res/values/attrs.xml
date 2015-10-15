@@ -10,9 +10,29 @@
         <attr name="floatingViewScaleSpeed" format="float" />
         <attr name="scrimColor" format="color|reference"/>
         <attr name="scrimColorSpeed" format="float" />
+        <attr name="overDragMultiplier" format="float" />
+        <attr name="returningSpringForce" format="float" />
+        <attr name="overDragPivotY" format="float" />
+        <attr name="overDragPivotX" format="float" />
         <attr name="scrimStrategy" format="enum" >
             <enum name="behind" value="0"/>
             <enum name="in_front" value="1"/>
+        </attr>
+        <attr name="floatViewOverDragBehavior" format="enum" >
+            <enum name="none" value="0"/>
+            <enum name="scale" value="1"/>
+        </attr>
+        <attr name="headerOpenStrategy" format="enum" >
+            <enum name="quick" value="0"/>
+            <enum name="top" value="1"/>
+        </attr>
+        <attr name="overDragStrategy" format="enum" >
+            <enum name="over_bounds" value="0"/>
+            <enum name="in_bounds" value="1"/>
+        </attr>
+        <attr name="customViewOverDragBehavior" format="enum" >
+            <enum name="none" value="0"/>
+            <enum name="with_image" value="1"/>
         </attr>
         <attr name="headerInitialState" format="enum" >
             <enum name="collapsed" value="0"/>

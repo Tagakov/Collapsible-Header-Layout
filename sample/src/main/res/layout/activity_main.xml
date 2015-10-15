@@ -10,58 +10,62 @@
     app:parallaxMultiplier="1"
     app:customViewParallaxMultiplier="0.5"
     app:scrimStrategy="behind"
+    app:overDragStrategy="over_bounds"
+    app:customViewOverDragBehavior="none"
+    app:floatingViewId="@+id/floating"
+    app:headerInitialState="collapsed"
     >
 
-    <!--<LinearLayout-->
-        <!--android:id="@+id/floating"-->
-        <!--android:layout_width="match_parent"-->
-        <!--android:layout_height="wrap_content"-->
-        <!--android:orientation="horizontal"-->
-        <!-->-->
-<!---->
-        <!--<Space-->
-            <!--android:layout_width="0dp"-->
-            <!--android:layout_height="1dp"-->
-            <!--android:layout_weight="1"-->
-            <!--/>-->
-<!---->
-        <!--<View-->
-            <!--android:layout_width="50dp"-->
-            <!--android:layout_height="50dp"-->
-            <!--android:background="#f00"-->
-            <!--/>-->
-<!---->
-        <!--<Space-->
-            <!--android:layout_width="0dp"-->
-            <!--android:layout_height="1dp"-->
-            <!--android:layout_weight="1"-->
-            <!--/>-->
-<!---->
-        <!--<View-->
-            <!--android:layout_width="50dp"-->
-            <!--android:layout_height="50dp"-->
-            <!--android:background="#0f0"-->
-            <!--/>-->
-<!---->
-        <!--<Space-->
-            <!--android:layout_width="0dp"-->
-            <!--android:layout_height="1dp"-->
-            <!--android:layout_weight="1"-->
-            <!--/>-->
-<!---->
-        <!--<View-->
-            <!--android:layout_width="50dp"-->
-            <!--android:layout_height="50dp"-->
-            <!--android:background="#00f"-->
-            <!--/>-->
-<!---->
-        <!--<Space-->
-            <!--android:layout_width="0dp"-->
-            <!--android:layout_height="1dp"-->
-            <!--android:layout_weight="1"-->
-            <!--/>-->
-<!---->
-    <!--</LinearLayout>-->
+    <LinearLayout
+        android:id="@+id/floating"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:orientation="horizontal"
+        >
+
+        <Space
+            android:layout_width="0dp"
+            android:layout_height="1dp"
+            android:layout_weight="1"
+            />
+
+        <View
+            android:layout_width="50dp"
+            android:layout_height="50dp"
+            android:background="#f00"
+            />
+
+        <Space
+            android:layout_width="0dp"
+            android:layout_height="1dp"
+            android:layout_weight="1"
+            />
+
+        <View
+            android:layout_width="50dp"
+            android:layout_height="50dp"
+            android:background="#0f0"
+            />
+
+        <Space
+            android:layout_width="0dp"
+            android:layout_height="1dp"
+            android:layout_weight="1"
+            />
+
+        <View
+            android:layout_width="50dp"
+            android:layout_height="50dp"
+            android:background="#00f"
+            />
+
+        <Space
+            android:layout_width="0dp"
+            android:layout_height="1dp"
+            android:layout_weight="1"
+            />
+
+    </LinearLayout>
 
     <TextView
         android:layout_width="match_parent"
