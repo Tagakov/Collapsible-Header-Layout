@@ -10,6 +10,8 @@ import android.graphics.Color;
 import android.graphics.drawable.ColorDrawable;
 import android.graphics.drawable.Drawable;
 import android.os.Build;
+import android.os.Parcel;
+import android.os.Parcelable;
 import android.support.v4.view.MotionEventCompat;
 import android.support.v4.view.NestedScrollingChild;
 import android.support.v4.view.NestedScrollingChildHelper;
@@ -23,7 +25,6 @@ import android.view.MotionEvent;
 import android.view.View;
 import android.view.ViewConfiguration;
 import android.view.ViewGroup;
-import android.view.ViewTreeObserver;
 import android.view.animation.AccelerateInterpolator;
 import android.view.animation.DecelerateInterpolator;
 import android.widget.AbsListView;
@@ -74,12 +75,14 @@ public class CollapsibleHeaderLayout extends FrameLayout implements NestedScroll
     private boolean isBeingDragged;
     private float prevMotionY;
     private float headerOverDrag;
-    private float headerTranslation;
-    private float accumulatedHeaderTranslation;
     private int minTranslation;
     private float maxOverDragDistance;
     private float maxOverDragScale;
     private boolean returningToStart;
+
+    private float headerTranslation;
+    private float accumulatedHeaderTranslation;
+    private boolean initialStateSet;
 
     private float parallaxMultiplier = .5f;
     private float customViewParallaxMultiplier = 0f;
@@ -205,6 +208,15 @@ public class CollapsibleHeaderLayout extends FrameLayout implements NestedScroll
         headerContainer.setPivotY(headerContainer.getHeight() * overDragPivotY);
 
         updateFloatingViewMargin();
+
+        setInitialState();
+    }
+
+    private void setInitialState() {
+        if (initialState == INITIAL_STATE_COLLAPSED && !initialStateSet && contentView.getHeight() > 0) {
+            initialStateSet = true;
+            contentView.scrollBy(0, -minTranslation);
+        }
     }
 
     @Override
@@ -265,20 +277,6 @@ public class CollapsibleHeaderLayout extends FrameLayout implements NestedScroll
             lp.topMargin += headerHeight;
         } else {
             throw new IllegalStateException("Content view must be presented in the hierarchy");
-        }
-
-        if (initialState == INITIAL_STATE_COLLAPSED) {
-            contentView.getViewTreeObserver().addOnPreDrawListener(new ViewTreeObserver.OnPreDrawListener() {
-                @Override
-                public boolean onPreDraw() {
-                    contentView.getViewTreeObserver().removeOnPreDrawListener(this);
-                    CollapseListener tmp = collapseListener;
-                    collapseListener = null;
-                    contentView.scrollBy(0, -minTranslation);
-                    collapseListener = tmp;
-                    return false;
-                }
-            });
         }
     }
 
@@ -443,7 +441,7 @@ public class CollapsibleHeaderLayout extends FrameLayout implements NestedScroll
 
     private void onHeaderMoveUp(float translation, float headerVisibleFraction) {
         if (floatView != null) {
-            scaleFloatView(headerVisibleFraction * floatViewScaleSpeed);
+            scaleFloatView(headerVisibleFraction * floatViewScaleSpeed + (1f - floatViewScaleSpeed));
         }
         scrimHeader(headerVisibleFraction);
         moveHeader(translation);
@@ -760,5 +758,64 @@ public class CollapsibleHeaderLayout extends FrameLayout implements NestedScroll
     @Override
     public boolean dispatchNestedPreFling(float velocityX, float velocityY) {
         return mNestedScrollingChildHelper.dispatchNestedPreFling(velocityX, velocityY);
+    }
+
+    @Override
+    protected Parcelable onSaveInstanceState() {
+        final Parcelable superState = super.onSaveInstanceState();
+        SavedState ss = new SavedState(superState);
+        ss.initialStateSet = initialStateSet;
+        ss.headerTranslation = headerTranslation;
+        ss.accumulatedHeaderTranslation = accumulatedHeaderTranslation;
+
+        return ss;
+    }
+
+    @Override
+    protected void onRestoreInstanceState(Parcelable state) {
+        SavedState ss = (SavedState) state;
+        super.onRestoreInstanceState(ss.getSuperState());
+        initialStateSet = ss.initialStateSet;
+        headerTranslation = ss.headerTranslation;
+        accumulatedHeaderTranslation = ss.accumulatedHeaderTranslation;
+
+    }
+
+    static class SavedState extends BaseSavedState {
+
+        float headerTranslation;
+        float accumulatedHeaderTranslation;
+        boolean initialStateSet;
+
+        SavedState(Parcelable superState) {
+            super(superState);
+        }
+
+        private SavedState(Parcel source) {
+            super(source);
+            headerTranslation = source.readFloat();
+            accumulatedHeaderTranslation = source.readFloat();
+            initialStateSet = source.readByte() == 1;
+
+        }
+
+        @Override
+        public void writeToParcel(Parcel dest, int flags) {
+            dest.writeFloat(headerTranslation);
+            dest.writeFloat(accumulatedHeaderTranslation);
+            dest.writeByte((byte) (initialStateSet ? 1 : 0));
+        }
+
+        public static final Creator<SavedState> CREATOR = new Creator<SavedState>() {
+            @Override
+            public SavedState createFromParcel(Parcel in) {
+                return new SavedState(in);
+            }
+
+            @Override
+            public SavedState[] newArray(int size) {
+                return new SavedState[size];
+            }
+        };
     }
 }
